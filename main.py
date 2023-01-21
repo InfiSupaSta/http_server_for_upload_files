@@ -1,7 +1,9 @@
 from http import server
 import pathlib
+import sys
 import os
 import logging
+import argparse
 
 from writers.file_writer import FileWriter
 from writers.base import Writer
@@ -89,7 +91,8 @@ class RequestHandler(server.BaseHTTPRequestHandler):
             return True
         return False
 
-    def _check_file_uploaded_successfully(self, source_file: bytes, destination_file: pathlib.Path):
+    @staticmethod
+    def _check_file_uploaded_successfully(source_file: bytes, destination_file: pathlib.Path):
         with open(destination_file, 'rb') as uploaded_file:
             data = uploaded_file.read()
 
@@ -121,10 +124,51 @@ class Server:
 
 
 if __name__ == '__main__':
-    try:
-        srvr = Server(handler_class=RequestHandler).start_server()
-        srvr.serve_forever()
-    except KeyboardInterrupt:
-        logger.info('Server stop working due to keyboard interruption.')
-    except Exception as exc:
-        logger.info(f'Server stop working. Reason: {exc}')
+    if len(sys.argv) > 2:
+        # class ArgsStorage:
+        #     filename: str = None
+        #     http_version: str = '1.0'
+        #     server_address: tuple[str, int] = ('localhost', 8080)
+        #
+        #
+        # class CurlRequest:
+        #     template = 'curl -X POST {} --upload-file {} http://{}:{}'
+        #
+        #     def __init__(self):
+        #         self.namespace = ArgsStorage
+        #
+        #     def _make_command(self):
+        #         filename = self.namespace.filename
+        #         http_version = f'--http{self.namespace.http_version}' if self.namespace.http_version != '1.0' else ''
+        #         host, port = self.namespace.server_address
+        #         command = self.template.format(http_version, filename, host, port).replace('  ', ' ')
+        #         return command
+        #
+        #     def execute(self):
+        #         os.system(self._make_command())
+        #
+        #
+        # parser = argparse.ArgumentParser(description='Process file to upload.')
+        # parser.add_argument('--http',
+        #                     default='1.0',
+        #                     choices=['0.9', '1.0', '1.1'],
+        #                     help='Available HTTP versions.'
+        #                     )
+        # parser.add_argument('--filename',
+        #                     dest='filename',
+        #                     help='Path for file that being uploaded.'
+        #                     )
+        #
+        # parsed_args = parser.parse_args(namespace=ArgsStorage)
+        # CurlRequest().execute()
+        from cli_parser.main import command
+        command.execute()
+
+    else:
+        try:
+            srvr = Server(handler_class=RequestHandler).start_server()
+            srvr.serve_forever()
+        except KeyboardInterrupt:
+            logger.info('Server stop working due to keyboard interruption.')
+        except Exception as exc:
+            logger.info(f'Server stop working. Reason: {exc}')
