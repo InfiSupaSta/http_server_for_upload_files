@@ -19,7 +19,7 @@ class RequestHandler(server.BaseHTTPRequestHandler):
     """
         Class for only one purpose - handle POST requests to download
         upcoming files.
-        For curl use cases like example below:
+        Currently tested on curl use cases like example below:
 
         curl -X POST --upload-file ./dont_touch_me/C_shildt.pdf localhost:8080
     """
@@ -28,9 +28,7 @@ class RequestHandler(server.BaseHTTPRequestHandler):
     default_request_version = 'HTTP/1.0'
 
     def set_headers(self):
-        self.send_response(200)
         self.send_header('Host', 'localhost')
-        self.send_header("Content-Type", "text/html")
         self.send_header('Location', f'{self.path}')
         self.end_headers()
 
@@ -43,11 +41,15 @@ class RequestHandler(server.BaseHTTPRequestHandler):
         return html.encode('utf-8')
 
     def do_GET(self):
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html")
+        self.set_headers()
         self.wfile.write(
             self.make_html('Hello from simple hTTP server for uploading files via POST request!')
         )
 
     def do_POST(self):
+        self.send_response(200)
         self.set_headers()
 
         filesize = int(
@@ -122,10 +124,14 @@ class Server:
 
 if __name__ == '__main__':
 
-    if len(sys.argv) > 2:
+    # means script used for file uploading
+    # with command looks like
+    # python3 ./server.py --filename some_file_name_to_upload
+    if len(sys.argv) >= 2:
         from cli_parser.parser import command
         command.execute()
 
+    # otherwise script used for starting server
     else:
         try:
             srvr = Server(handler_class=RequestHandler).start_server()
