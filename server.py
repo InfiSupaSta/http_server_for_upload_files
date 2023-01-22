@@ -123,7 +123,7 @@ class Server:
 if __name__ == '__main__':
 
     if len(sys.argv) > 2:
-        from cli_parser.main import command
+        from cli_parser.parser import command
         command.execute()
 
     else:
